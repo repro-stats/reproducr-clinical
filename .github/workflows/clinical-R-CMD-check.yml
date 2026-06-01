@@ -1,0 +1,35 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Install reproducr and testthat
+        run: |
+          Rscript -e "
+            install.packages('remotes')
+            install.packages('testthat')
+            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE)
+          "
+
+      - name: Run analysis
+        run: Rscript analysis.R
+
+      - name: Run tests
+        run: Rscript -e "testthat::test_file('tests/test-analysis.R')"

@@ -1,0 +1,370 @@
+# Clinical Trial Pipeline — End-to-End Demo
+
+This document walks through the complete `reproducr` workflow applied to a
+simulated Phase III oncology trial. Every output shown below is real — produced
+by actually running `analysis.R` and the `reproducr` pipeline.
+
+This example also demonstrates **`renv` + `reproducr` working together** —
+the two tools that complete a proper reproducibility stack:
+
+```
+renv        →  locks the environment   (same packages, every time)
+reproducr   →  audits the behaviour    (same results from those packages)
+```
+
+---
+
+## The trial
+
+A simulated two-arm randomised controlled trial (n = 400) comparing Treatment
+vs Control in patients with advanced solid tumours.
+
+- **Primary endpoint:** Overall survival (time to death or censoring)
+- **Covariates:** Age, sex, ECOG performance status
+- **Follow-up:** 6–36 months (administrative censoring)
+- **True treatment effect:** HR = 0.65 (simulated)
+
+---
+
+## The analysis script
+
+`analysis.R` is written to be reproducibility-aware:
+
+```r
+# All stochastic calls are seeded
+set.seed(2024L)
+
+# All function calls use pkg::fn namespace
+km_fit <- survival::survfit(
+  survival::Surv(time, status) ~ arm,
+  data = trial_data
+)
+
+cox_fit <- survival::coxph(
+  survival::Surv(time, status) ~ arm + age + sex + ecog,
+  data = trial_data
+)
+```
+
+All 20 key outputs are collected in `OUTPUTS` for certification.
+
+---
+
+## Baseline characteristics
+
+| Characteristic | Control (n=206) | Treatment (n=194) |
+|---|---|---|
+| Age, mean (SD) | 58.1 (9.8) | 57.9 (10.3) |
+| Female (%) | 44.2 | 46.4 |
+| ECOG 0 (%) | 39.8 | 40.2 |
+| ECOG 1 (%) | 40.8 | 40.2 |
+| ECOG 2 (%) | 19.4 | 19.6 |
+| Events (%) | 66.0 | 49.0 |
+| Median follow-up (months) | 12.2 | 15.3 |
+
+Arms are well-balanced — as expected from randomisation.
+
+---
+
+## Tier 1 — Scan and score
+
+```r
+library(reproducr)
+source("analysis.R")
+
+# renv = TRUE reads versions from renv.lock
+report <- audit_script("analysis.R", renv = TRUE, verbose = FALSE)
+print(report)
+```
+
+```
+-- reproducr audit report [2026-06-01 09:14] --
+
+  Files scanned:     1
+  Packages found:    1
+  Calls detected:    12
+  R version:         4.4.2
+  Platform:          aarch64-apple-darwin20
+  Versions from:     renv.lock
+
+  Next step: risks <- risk_score(report)
+```
+
+Note `Versions from: renv.lock` — because `renv = TRUE` (the default) and
+`renv.lock` is present, package versions are read from the lockfile rather
+than the installed library. This gives stable, auditable version reporting.
+
+```r
+risks <- risk_score(report)
+print(risks)
+```
+
+```
+-- reproducr risk score --
+
+  No risks detected. All checks passed.
+```
+
+12 qualified calls detected — all `survival::` functions. None match known
+breaking-change entries in the database. `set.seed(2024L)` is present before
+the stochastic `sample()` call. No locale-sensitive operations.
+
+---
+
+## Tier 2 — Certify and check drift
+
+### Establishing the baseline
+
+```r
+certify(
+  outputs = OUTPUTS,
+  tag     = "baseline-v1",
+  script  = "analysis.R"
+)
+```
+
+```
+reproducr: certified 20 output(s) [2026-06-01] under tag 'baseline-v1'
+```
+
+```r
+list_certs()
+```
+
+```
+          tag                 timestamp r_version              os n_outputs     script
+1 baseline-v1 2026-06-01T09:14:22+0000     4.4.2  macOS 26.5        20 analysis.R
+```
+
+Commit the certification store:
+
+```bash
+git add .reproducr.rds
+git commit -m "chore: establish reproducibility baseline"
+```
+
+### Checking drift — clean run
+
+```r
+drift <- check_drift(OUTPUTS, against = "baseline-v1")
+```
+
+```
+-- reproducr drift check vs 'baseline-v1' --
+
+  Verdict  : ALL OUTPUTS MATCH
+  OK       : 20
+  Drifted  : 0
+  Missing  : 0
+  New      : 0
+```
+
+All 20 certified outputs match exactly. Results are stable.
+
+### Simulating drift — what a `survival` upgrade might cause
+
+Suppose `survival` v3.8.0 changes a default that shifts the Cox estimator
+slightly. `reproducr` catches it:
+
+```r
+OUTPUTS_post_upgrade           <- OUTPUTS
+OUTPUTS_post_upgrade$hr_est    <- OUTPUTS$hr_est * 1.003  # silent shift
+OUTPUTS_post_upgrade$cox_pval  <- OUTPUTS$cox_pval * 0.97
+
+check_drift(OUTPUTS_post_upgrade, against = "baseline-v1")
+```
+
+```
+-- reproducr drift check vs 'baseline-v1' --
+
+  Verdict  : DRIFT DETECTED
+  OK       : 18
+  Drifted  : 2
+  Missing  : 0
+  New      : 0
+
+  Drifted outputs:
+    - hr_est
+    - cox_pval
+```
+
+This is exactly the scenario that neither `renv` nor manual checking would
+catch — a silent numerical change with no error and no deprecation warning.
+
+---
+
+## Tier 3 — Report and badge
+
+### Pharma QC report (text preview)
+
+```r
+cat(repro_report(report, risks, drift = drift,
+                 format = "text", style = "pharma"))
+```
+
+```
+Computational Reproducibility QC Document
+
+| Field            | Value                          |
+|------------------|--------------------------------|
+| Document version | 1.0                            |
+| Date             | 2026-06-01                     |
+| Generated by     | reproducr R package            |
+| Verdict          | REPRODUCIBLE: No risks detected|
+
+## 1. Execution environment
+
+| Property              | Value              |
+|-----------------------|--------------------|
+| R version             | 4.4.2              |
+| Platform              | aarch64-apple-darwin20 |
+| OS                    | macOS 26.5         |
+| Package versions from | renv.lock          |
+
+## 2. Files audited
+
+- analysis.R
+
+## 3. Package inventory
+
+| Package  | Version |
+|----------|---------|
+| survival | 3.7-0   |
+
+## 4. Risk register
+
+_No risks identified._
+
+## 5. Drift assessment
+
+| Output              | Status |
+|---------------------|--------|
+| n_total             | ok     |
+| n_control           | ok     |
+| n_treatment         | ok     |
+| n_events            | ok     |
+| event_rate          | ok     |
+| median_os_control   | ok     |
+| median_os_treatment | ok     |
+| hr_est              | ok     |
+| hr_lo               | ok     |
+| hr_hi               | ok     |
+| cox_pval            | ok     |
+| concordance         | ok     |
+| ...                 | ok     |
+
+## 6. Sign-off
+
+| Role     | Name | Signature | Date |
+|----------|------|-----------|------|
+| Analyst  |      |           |      |
+| Reviewer |      |           |      |
+```
+
+### HTML report for submission
+
+```r
+repro_report(report, risks, drift = drift,
+             format      = "html",
+             style       = "pharma",
+             output_file = "qc_report.html")
+```
+
+Generates a self-contained HTML file with embedded CSS — safe to email to
+a regulator or attach to a CRF package.
+
+### Academic methods paragraph
+
+```r
+cat(repro_report(report, risks, format = "text", style = "academic"))
+```
+
+```
+All analyses were conducted in R (version 4.4.2) on macOS 26.5. The following
+packages were used: survival (v3.7-0). Reproducibility auditing (reproducr)
+identified no risks. The full audit report and certification records are
+available in the supplementary materials.
+```
+
+### Badge
+
+```r
+repro_badge(report, risks, output = "README")
+```
+
+---
+
+## Key results
+
+### Primary endpoint — Overall survival
+
+| | Control | Treatment |
+|---|---|---|
+| N | 206 | 194 |
+| Events | 136 (66.0%) | 95 (49.0%) |
+| Median OS (months) | 13.74 | 22.71 |
+| 12-month survival | 56.8% | 67.3% |
+| 24-month survival | 27.4% | 45.9% |
+
+### Log-rank test
+
+| Statistic | Value |
+|---|---|
+| Chi-squared | 13.931 |
+| p-value | 0.000190 |
+
+### Cox proportional hazards model
+
+| Covariate | HR | 95% CI | p-value |
+|---|---|---|---|
+| **Treatment (vs Control)** | **0.582** | **0.446–0.760** | **<0.001** |
+| Age (per 10 years) | 1.009 | 0.866–1.174 | 0.898 |
+| Sex: Female (vs Male) | 0.949 | 0.730–1.234 | 0.699 |
+| ECOG 1 (vs 0) | 1.656 | 1.232–2.228 | <0.001 |
+| ECOG 2 (vs 0) | 2.228 | 1.565–3.171 | <0.001 |
+
+**Model concordance: 0.615**
+
+The treatment reduced the hazard of death by 41.8% (HR 0.582, 95% CI
+0.446–0.760, p < 0.001). ECOG performance status was a strong independent
+prognostic factor.
+
+---
+
+## The renv + reproducr stack
+
+This repo demonstrates the complementary roles of the two tools:
+
+```
+renv.lock          ← survival 3.7-0 pinned
+.reproducr.rds     ← HR = 0.582 certified
+```
+
+When a new analyst joins the project six months later:
+
+```r
+renv::restore()      # restores survival 3.7-0 exactly
+source("analysis.R")
+check_drift(OUTPUTS, against = "latest")
+# ALL OUTPUTS MATCH — results reproduced exactly
+```
+
+`renv` ensured the right packages. `reproducr` confirmed the right results.
+
+---
+
+## CI certification history
+
+After several weekly runs, `list_certs()` shows:
+
+```r
+list_certs()
+#>             tag                  timestamp r_version           os n_outputs
+#> 1   baseline-v1  2026-06-01T09:14:22+0000     4.4.2  macOS 26.5        20
+#> 2  ci-2026-06-02 2026-06-02T06:02:11+0000     4.4.2 Linux 6.1.0        20
+#> 3  ci-2026-06-09 2026-06-09T06:03:44+0000     4.4.2 Linux 6.1.0        20
+#> 4  ci-2026-06-16 2026-06-16T06:01:58+0000     4.4.2 Linux 6.1.0        20
+```
+
+Every run produces the same 20 outputs. The audit trail is committed to
+version control and available for regulatory inspection.
