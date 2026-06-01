@@ -38,7 +38,7 @@ jobs:
         run: |
           Rscript -e "
             install.packages('remotes')
-            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE, force = TRUE)
+            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE, force = TRUE, dependencies = TRUE)
           "
 
       - name: Run analysis and audit

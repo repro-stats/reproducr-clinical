@@ -32,7 +32,7 @@ jobs:
           Rscript -e "
             install.packages('remotes')
             install.packages('testthat')
-            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE, force = TRUE)
+            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE, force = TRUE, dependencies = TRUE)
           "
 
       - name: Run analysis
