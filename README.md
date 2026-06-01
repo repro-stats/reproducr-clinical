@@ -1,7 +1,7 @@
 # reproducr-example-clinical <a href="https://ndohpenngit.github.io/reproducr/"><img src="https://raw.githubusercontent.com/ndohpenngit/reproducr/main/man/figures/logo.svg" align="right" height="120" alt="reproducr website" /></a>
 
 <!-- badges: start -->
-[![reproducibility](https://img.shields.io/badge/reproducibility-reproducible-brightgreen)](https://ndohpenngit.github.io/reproducr/)
+[![reproducibility](https://img.shields.io/badge/reproducibility-at%20risk-red)](https://ndohpenngit.github.io/reproducr/)
 [![R-CMD-check](https://github.com/ndohpenngit/reproducr-example-clinical/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/ndohpenngit/reproducr-example-clinical/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
