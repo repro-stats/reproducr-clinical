@@ -5,7 +5,8 @@ on:
     branches: [main]
   schedule:
     - cron: '0 6 * * 1'   # Weekly on Monday at 06:00 UTC
-
+  workflow_dispatch: 
+  
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -30,7 +31,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
       - name: Install reproducr
         env:
@@ -38,7 +39,10 @@ jobs:
         run: |
           Rscript -e "
             install.packages('remotes')
-            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE, force = TRUE, dependencies = TRUE)
+            remotes::install_github('ndohpenngit/reproducr',
+                                    quiet        = TRUE,
+                                    force        = TRUE,
+                                    dependencies = TRUE)
           "
 
       - name: Run analysis and audit
@@ -46,15 +50,11 @@ jobs:
           Rscript -e "
             library(reproducr)
 
-            # Run the analysis — produces OUTPUTS
             source('analysis.R')
 
-            # Tier 1: scan the script for risks
-            # renv = TRUE so versions are read from renv.lock
             report <- audit_script('analysis.R', renv = TRUE, verbose = FALSE)
             risks  <- risk_score(report)
 
-            # Tier 2: check for drift against last certified run
             if (file.exists('.reproducr.rds')) {
               drift <- check_drift(OUTPUTS, against = 'latest')
               if (any(drift\$status == 'drifted')) {
@@ -65,14 +65,12 @@ jobs:
               message('No prior certification — establishing baseline.')
             }
 
-            # Certify this run
             certify(
               outputs = OUTPUTS,
               tag     = paste0('ci-', Sys.Date()),
               script  = 'analysis.R'
             )
 
-            # Tier 3: update badge and generate pharma QC report
             repro_badge(report, risks, drift = drift, output = 'README')
             repro_report(
               report, risks, drift = drift,
