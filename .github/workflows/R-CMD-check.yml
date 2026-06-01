@@ -18,6 +18,11 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install reproducr and testthat
@@ -27,7 +32,7 @@ jobs:
           Rscript -e "
             install.packages('remotes')
             install.packages('testthat')
-            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE)
+            remotes::install_github('ndohpenngit/reproducr', quiet = TRUE, force = TRUE)
           "
 
       - name: Run analysis
