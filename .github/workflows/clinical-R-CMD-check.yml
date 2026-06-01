@@ -21,6 +21,8 @@ jobs:
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install reproducr and testthat
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Rscript -e "
             install.packages('remotes')
