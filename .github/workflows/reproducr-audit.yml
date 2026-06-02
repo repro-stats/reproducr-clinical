@@ -39,7 +39,7 @@ jobs:
         run: |
           Rscript -e "
             install.packages('remotes')
-            remotes::install_github('ndohpenngit/reproducr',
+            remotes::install_github('reproducr-dev/reproducr',
                                     quiet        = TRUE,
                                     force        = TRUE,
                                     dependencies = TRUE)
