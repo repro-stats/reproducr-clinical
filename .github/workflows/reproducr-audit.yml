@@ -39,7 +39,7 @@ jobs:
         run: |
           Rscript -e "
             install.packages('remotes')
-            remotes::install_github('reproducr-dev/reproducr',
+            remotes::install_github('repro-stats/reproducr',
                                     quiet        = TRUE,
                                     force        = TRUE,
                                     dependencies = TRUE)

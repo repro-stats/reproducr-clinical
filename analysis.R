@@ -1,5 +1,5 @@
 # Simulated Phase III Oncology Trial — Time-to-Event Analysis
-# reproducr-example-clinical: https://github.com/reproducr-dev/reproducr-example-clinical
+# reproducr-example-clinical: https://github.com/repro-stats/reproducr-example-clinical
 #
 # Two-arm randomised controlled trial comparing Treatment vs Control
 # in patients with advanced solid tumours.

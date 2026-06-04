@@ -32,7 +32,7 @@ jobs:
           Rscript -e "
             install.packages('remotes')
             install.packages('testthat')
-            remotes::install_github('reproducr-dev/reproducr',
+            remotes::install_github('repro-stats/reproducr',
                                     quiet        = TRUE,
                                     force        = TRUE,
                                     dependencies = TRUE)

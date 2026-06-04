@@ -1,12 +1,12 @@
-# reproducr-example-clinical <a href="https://reproducr-dev.github.io/reproducr/"><img src="https://raw.githubusercontent.com/reproducr-dev/reproducr/main/man/figures/logo.svg" align="right" height="120" alt="reproducr website" /></a>
+# reproducr-example-clinical <a href="https://repro-stats.github.io/reproducr/"><img src="https://raw.githubusercontent.com/repro-stats/reproducr/main/man/figures/logo.svg" align="right" height="120" alt="reproducr website" /></a>
 
 <!-- badges: start -->
-[![reproducibility](https://img.shields.io/badge/reproducibility-reproducible-brightgreen)](https://reproducr-dev.github.io/reproducr/)
-[![R-CMD-check](https://github.com/reproducr-dev/reproducr-example-clinical/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/reproducr-dev/reproducr-example-clinical/actions/workflows/R-CMD-check.yml)
+[![reproducibility](https://img.shields.io/badge/reproducibility-reproducible-brightgreen)](https://repro-stats.github.io/reproducr/)
+[![R-CMD-check](https://github.com/repro-stats/reproducr-example-clinical/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/repro-stats/reproducr-example-clinical/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
 > A clinical trial end-to-end pipeline demonstrating
-> [`reproducr`](https://github.com/reproducr-dev/reproducr) with `renv` —
+> [`reproducr`](https://github.com/repro-stats/reproducr) with `renv` —
 > the complete reproducibility stack for regulated analytical workflows.
 
 **See the full walkthrough: [`DEMO.md`](DEMO.md)**
@@ -15,7 +15,7 @@
 
 ## This example vs reproducr-example
 
-| | [reproducr-example](https://github.com/reproducr-dev/reproducr-example) | this repo |
+| | [reproducr-example](https://github.com/repro-stats/reproducr-example) | this repo |
 |---|---|---|
 | Domain | Ecology / penguins | Clinical trials / oncology |
 | `renv` | No | **Yes** |
@@ -136,7 +136,7 @@ renv::restore()
 
 # 2. Install reproducr
 install.packages("remotes")
-remotes::install_github("reproducr-dev/reproducr")
+remotes::install_github("repro-stats/reproducr")
 
 # 3. Run the analysis
 source("analysis.R")
@@ -171,8 +171,8 @@ timestamped audit trail.
 ## About
 
 This is a companion repository to the
-[`reproducr`](https://github.com/reproducr-dev/reproducr) R package,
+[`reproducr`](https://github.com/repro-stats/reproducr) R package,
 demonstrating the full pipeline in a clinical trial context with `renv`.
 
-See also: [`reproducr-example`](https://github.com/reproducr-dev/reproducr-example)
+See also: [`reproducr-example`](https://github.com/repro-stats/reproducr-example)
 (ecology example, no renv) for a simpler starting point.
