@@ -1,8 +1,8 @@
-# reproducr-example-clinical <a href="https://repro-stats.github.io/reproducr/"><img src="https://raw.githubusercontent.com/repro-stats/reproducr/main/man/figures/logo.svg" align="right" height="120" alt="reproducr website" /></a>
+# reproducr-clinical <a href="https://repro-stats.github.io/reproducr/"><img src="https://raw.githubusercontent.com/repro-stats/reproducr/main/man/figures/logo.svg" align="right" height="120" alt="reproducr website" /></a>
 
 <!-- badges: start -->
 [![reproducibility](https://img.shields.io/badge/reproducibility-reproducible-brightgreen)](https://repro-stats.github.io/reproducr/)
-[![R-CMD-check](https://github.com/repro-stats/reproducr-example-clinical/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/repro-stats/reproducr-example-clinical/actions/workflows/R-CMD-check.yml)
+[![R-CMD-check](https://github.com/repro-stats/reproducr-clinical/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/repro-stats/reproducr-clinical/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
 > A clinical trial end-to-end pipeline demonstrating
