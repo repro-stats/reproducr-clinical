@@ -5,4 +5,5 @@
 renv/library/
 renv/staging/
 .renv/
-reproducibility_report.md
+.DS_Store
+Thumbs.db
